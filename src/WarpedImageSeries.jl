@@ -2,7 +2,7 @@ module WarpedImageSeries
 
 using Images, BlockRegistration, Interpolations
 
-import Base: getindex, size
+import Base: getindex, size, show
 export WarpedSeriesView, warpedseries
 
 struct WarpedSeriesView{T,N} <: AbstractArray{T,N}
@@ -24,6 +24,9 @@ function warpedseries(img::AbstractArray{T,N}, tfms) where {T,N}
     end
     return WarpedSeriesView(img, tfms, vs, sh_idxs)
 end
+
+show(io::IO, A::T) where {T<:WarpedSeriesView} = print(io, "WarpedSeriesView of size $(size(A)), eltype $(eltype(A))\n")
+show(io::IO, ::MIME"text/plain", A::T) where {T<:WarpedSeriesView} = show(io, A)
 
 size(A::WarpedSeriesView{T,N}) where {T,N} = (map(length, A.shared_idxs)...,size(A.img, N))
 getindex(A::WarpedSeriesView, inds...) = inner_index(A, last(inds), A.shared_idxs, Base.front(inds)...)
