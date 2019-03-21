@@ -1,6 +1,6 @@
-using WarpedImageSeries, BlockRegistration, CoordinateTransformations
+using WarpedImageSeries, RegisterDeformation, CoordinateTransformations
 
-using Base.Test
+using Test
 
 all_nan_eq(a1, a2) = all(map((x,y)->isequal(x,y), a1, a2))
 
@@ -11,9 +11,9 @@ tfms = fill(Translation(0.1,0.2), n);
 ws = warpedseries(a, tfms);
 @test size(a) == size(ws)
 wrpd = warp(a[:,:,1], tfms[1]);
-@test all_nan_eq(ws[:,:,1], wrpd[Base.front(indices(a))...])
+@test all_nan_eq(ws[:,:,1], wrpd[Base.front(axes(a))...])
 wrpd = warp(a[:,:,2], tfms[2]);
-@test all_nan_eq(ws[:,:,2], wrpd[Base.front(indices(a))...])
+@test all_nan_eq(ws[:,:,2], wrpd[Base.front(axes(a))...])
 
 tfms2 = fill(Translation(1.1,1.2), n);
 ws2 = warpedseries(a, tfms2);
@@ -34,9 +34,9 @@ tfms = fill(Translation(0.1,0.2,0.15), n);
 ws = warpedseries(a, tfms);
 @test size(a) == size(ws)
 wrpd = warp(a[:,:,:,1], tfms[1]);
-@test all_nan_eq(ws[:,:,:,1], wrpd[Base.front(indices(a))...])
+@test all_nan_eq(ws[:,:,:,1], wrpd[Base.front(axes(a))...])
 wrpd = warp(a[:,:,:,2], tfms[2]);
-@test all_nan_eq(ws[:,:,:,2], wrpd[Base.front(indices(a))...])
+@test all_nan_eq(ws[:,:,:,2], wrpd[Base.front(axes(a))...])
 
 tfms2 = fill(Translation(1.1,1.2,1.15), n);
 ws2 = warpedseries(a, tfms2);
