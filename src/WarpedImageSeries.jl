@@ -1,29 +1,37 @@
 module WarpedImageSeries
 
 #using Images, BlockRegistration, Interpolations
-using Images, RegisterDeformation, Interpolations
+using Images, RegisterDeformation, Interpolations, MappedArrays
 
 import Base: getindex, size, show
 export WarpedSeriesView, warpedseries
 
-struct WarpedSeriesView{T,N} <: AbstractArray{T,N}
-    img::AbstractArray{T,N}
+struct WarpedSeriesView{TO,N,TI} <: AbstractArray{TO,N}
+    img::AbstractArray{TI,N}
     tfms #can be anything that warpedview() accepts
     views #output of warpedview(img, tfm[i]) for each i
     shared_idxs #intersection of all sets of warped indices
 end
 
-function warpedseries(img::AbstractArray{T,N}, tfms) where {T,N}
+#default to Float64 output precision
+WarpedSeriesView(img::AbstractArray{T,N}, tfms, views, shared_idxs) where {T,N} =
+    WarpedSeriesView{Float64,T,N}(img, tfms, views, shared_idxs)
+
+#This is conservative in that we only include in the view pixels that are
+#common to all images post-warping.
+#Note: this index intersection may cause problems for general non-affine deformations;
+#only tested on rigid deformations so far
+function warpedseries(img::AbstractArray{T,N}, tfms, precision=Float64) where {T,N}
     @assert length(tfms) == size(img, N) #assume series is along last dimension
     sh_idxs = axes(img)
     vs = []
     colons = (fill(Colon(), N-1)...,)
     for i=1:length(tfms)
-        v = warpedview(view(img, colons..., i), tfms[i])
+        v = warpedview(mappedarray(precision, view(img, colons..., i)), tfms[i])
         sh_idxs = ([intersect(x, y) for (x,y) in zip(sh_idxs, axes(v))]...,)
         push!(vs, v)
     end
-    return WarpedSeriesView(img, tfms, vs, sh_idxs)
+    return WarpedSeriesView{precision,N,T}(img, tfms, vs, sh_idxs)
 end
 
 show(io::IO, A::T) where {T<:WarpedSeriesView} = print(io, "WarpedSeriesView of size $(size(A)), eltype $(eltype(A))\n")
