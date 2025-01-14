@@ -11,8 +11,8 @@ RegisterDeformation = "c19381b7-cf49-59d7-881c-50dfbd227eaf"
 
 [compat]
 CoordinateTransformations = "0.6"
-Images = "0.25"
 Interpolations = "0.13, 0.15"
+Images = "0.25, 0.26"
 MappedArrays = "0.4"
 julia = "1.6"
 
